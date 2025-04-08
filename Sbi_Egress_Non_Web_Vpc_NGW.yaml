@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SBI Network Infrastructure - NAT Gateways'
+
+Parameters:
+  EgressNonWebVPC:    
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for NAT Gateway creation
+
+  NatGwSubnet1a:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID for NAT Gateway 1a placement (SBI-non-web-egress-nat-gw-1a)
+
+  NatGwSubnet1b:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID for NAT Gateway 1b placement (SBI-non-web-egress-nat-gw-1b)
+
+  Environment:
+    Type: String
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name for resource tagging
+
+  Owner:
+    Type: String
+    Default: "SBI-Network-Team"
+    Description: Owner tag value
+
+Resources:
+  # NAT Gateway 1a Resources
+  NatGatewayEIP1a:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-ngw-1a-eip
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  NatGateway1A:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP1a.AllocationId
+      SubnetId: !Ref NatGwSubnet1a
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-ngw-1a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  # NAT Gateway 1b Resources
+  NatGatewayEIP1b:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-ngw-1b-eip
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  NatGateway1B:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP1b.AllocationId
+      SubnetId: !Ref NatGwSubnet1b
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-ngw-1b
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+Outputs:
+  NatGateway1aId:
+    Description: NAT Gateway 1a ID
+    Value: !Ref NatGateway1A
+    Export:
+      Name: !Sub ${AWS::StackName}-NatGateway1aId
+
+  NatGateway1bId:
+    Description: NAT Gateway 1b ID
+    Value: !Ref NatGateway1B
+    Export:
+      Name: !Sub ${AWS::StackName}-NatGateway1bId
+
+  NatGateway1aEIP:
+    Description: NAT Gateway 1a Elastic IP
+    Value: !Ref NatGatewayEIP1a
+    Export:
+      Name: !Sub ${AWS::StackName}-NatGateway1aEIP
+
+  NatGateway1bEIP:
+    Description: NAT Gateway 1b Elastic IP
+    Value: !Ref NatGatewayEIP1b
+    Export:
+      Name: !Sub ${AWS::StackName}-NatGateway1bEIP
