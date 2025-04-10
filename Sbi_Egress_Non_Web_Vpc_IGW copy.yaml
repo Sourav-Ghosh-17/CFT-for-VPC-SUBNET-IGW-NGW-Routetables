@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SBI Network Infrastructure - Internet Gateway'
+
+Parameters:
+  EgressNonWebVPC:    
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for Internet Gateway creation
+
+  Environment:
+    Type: String
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name for resource tagging
+
+  Owner:
+    Type: String
+    Default: "SBI-Network-Team"
+    Description: Owner tag value
+
+Resources:
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-igw
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      InternetGatewayId: !Ref InternetGateway
+
+Outputs:
+  InternetGatewayId:
+    Description: Internet Gateway ID
+    Value: !Ref InternetGateway
+    Export:
+      Name: !Sub ${AWS::StackName}-InternetGatewayId

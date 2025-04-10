@@ -1,0 +1,379 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SBI Network Infrastructure - Route Tables'
+
+Parameters:
+  EgressNonWebVPC:    
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for route table creation
+
+  InternetGatewayId:
+    Type: String
+    Description: Internet Gateway ID
+
+  NatGateway1aId:
+    Type: String
+    Description: NAT Gateway 1a ID
+
+  NatGateway1bId:
+    Type: String
+    Description: NAT Gateway 1b ID
+
+  # VpcCidr:
+  #   Type: String
+  #   Description: VPC CIDR Block
+  #   Default: "10.53.70.0/24"
+
+  GwlbEndpointSubnet1a:
+    Type: AWS::EC2::Subnet::Id
+    Description: GWLB Endpoint Subnet 1a ID
+    Default: subnet-08f7ef8c7f4780a8a
+    # Give the subnet ID (Above Line) in which you want to give NAT gateway Routing
+
+  GwlbEndpointSubnet1b:
+    Type: AWS::EC2::Subnet::Id
+    Description: GWLB Endpoint Subnet 1b ID
+    Default: subnet-09c448823e960ca77
+    # Give the subnet ID (Above Line) in which you want to give NAT gateway Routing
+
+  NatGwSubnet1a:
+    Type: AWS::EC2::Subnet::Id
+    Description: NAT Gateway Subnet 1a ID
+    # Default: subnet-0512a8d7447265ed8
+
+  NatGwSubnet1b:
+    Type: AWS::EC2::Subnet::Id
+    Description: NAT Gateway Subnet 1b ID
+    # Default: subnet-0bcd5434a53ba577f
+
+  FirewallSubnet1a:
+    Type: AWS::EC2::Subnet::Id
+    Description: Firewall Subnet 1a ID
+
+  FirewallSubnet1b:
+    Type: AWS::EC2::Subnet::Id
+    Description: Firewall Subnet 1b ID
+
+  ManagementSubnet1a:
+    Type: AWS::EC2::Subnet::Id
+    Description: Management Subnet 1a ID
+
+  ManagementSubnet1b:
+    Type: AWS::EC2::Subnet::Id
+    Description: Management Subnet 1b ID
+
+  TgwEniSubnet1a:
+    Type: AWS::EC2::Subnet::Id
+    Description: TGW ENI Subnet 1a ID
+
+  TgwEniSubnet1b:
+    Type: AWS::EC2::Subnet::Id
+    Description: TGW ENI Subnet 1b ID
+
+Resources:
+  # GWLB Endpoint Route Tables
+  GwlbEndpointRT1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-gwlb-e-1a-RT
+
+  GwlbEndpointRT1b:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-gwlb-e-1b-RT
+
+  # NAT Gateway Route Tables
+  NatGwRT1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-nat-gw-1a-RT
+
+  NatGwRT1b:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-nat-gw-1b-RT
+
+  # Firewall Route Tables
+  FirewallRT1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-FW-1a-RT
+
+  FirewallRT1b:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-FW-1b-RT
+
+  # Management Route Tables
+  ManagementRT1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-mgmt-1a-RT
+
+  ManagementRT1b:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-mgmt-1b-RT
+
+  # TGW ENI Route Tables
+  TgwEniRT1a:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-tgw-eni-1a-RT
+
+  TgwEniRT1b:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-tgw-eni-1b-RT
+          
+  # Route Table Associations
+  GwlbEndpointRTAssoc1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref GwlbEndpointSubnet1a
+      RouteTableId: !Ref GwlbEndpointRT1a
+
+  GwlbEndpointRTAssoc1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref GwlbEndpointSubnet1b
+      RouteTableId: !Ref GwlbEndpointRT1b
+
+  NatGwRTAssoc1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref NatGwSubnet1a
+      RouteTableId: !Ref NatGwRT1a
+
+  NatGwRTAssoc1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref NatGwSubnet1b
+      RouteTableId: !Ref NatGwRT1b
+
+  FirewallRTAssoc1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref FirewallSubnet1a
+      RouteTableId: !Ref FirewallRT1a
+
+  FirewallRTAssoc1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref FirewallSubnet1b
+      RouteTableId: !Ref FirewallRT1b
+
+  ManagementRTAssoc1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref ManagementSubnet1a
+      RouteTableId: !Ref ManagementRT1a
+
+  ManagementRTAssoc1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref ManagementSubnet1b
+      RouteTableId: !Ref ManagementRT1b
+
+  TgwEniRTAssoc1a:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TgwEniSubnet1a
+      RouteTableId: !Ref TgwEniRT1a
+
+  TgwEniRTAssoc1b:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref TgwEniSubnet1b
+      RouteTableId: !Ref TgwEniRT1b
+
+  # Local Routes for all Route Tables (VPC CIDR)
+  # GwlbEndpointRT1aLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref GwlbEndpointRT1a
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # GwlbEndpointRT1bLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref GwlbEndpointRT1b
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # NatGwRT1aLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref NatGwRT1a
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # NatGwRT1bLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref NatGwRT1b
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # FirewallRT1aLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref FirewallRT1a
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # FirewallRT1bLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref FirewallRT1b
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # ManagementRT1aLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref ManagementRT1a
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # ManagementRT1bLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref ManagementRT1b
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # TgwEniRT1aLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref TgwEniRT1a
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # TgwEniRT1bLocalRoute:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref TgwEniRT1b
+  #     DestinationCidrBlock: !Ref VpcCidr
+  #     GatewayId: local
+
+  # Internet Gateway Routes for NAT Gateway Subnets
+  NatGwRT1aIGWRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref NatGwRT1a
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayId
+
+  NatGwRT1bIGWRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref NatGwRT1b
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayId
+
+  # NAT Gateway Routes for GWLB Endpoint Subnets
+  GwlbEndpointRT1aNGWRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref GwlbEndpointRT1a
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1aId
+
+  GwlbEndpointRT1bNGWRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref GwlbEndpointRT1b
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1bId
+
+Outputs:
+  GwlbEndpointRT1aId:
+    Description: GWLB Endpoint Route Table 1a ID
+    Value: !Ref GwlbEndpointRT1a
+    Export:
+      Name: !Sub ${AWS::StackName}-GwlbEndpointRT1aId
+
+  GwlbEndpointRT1bId:
+    Description: GWLB Endpoint Route Table 1b ID
+    Value: !Ref GwlbEndpointRT1b
+    Export:
+      Name: !Sub ${AWS::StackName}-GwlbEndpointRT1bId
+
+  NatGwRT1aId:
+    Description: NAT Gateway Route Table 1a ID
+    Value: !Ref NatGwRT1a
+    Export:
+      Name: !Sub ${AWS::StackName}-NatGwRT1aId
+
+  NatGwRT1bId:
+    Description: NAT Gateway Route Table 1b ID
+    Value: !Ref NatGwRT1b
+    Export:
+      Name: !Sub ${AWS::StackName}-NatGwRT1bId
+
+  FirewallRT1aId:
+    Description: Firewall Route Table 1a ID
+    Value: !Ref FirewallRT1a
+    Export:
+      Name: !Sub ${AWS::StackName}-FirewallRT1aId
+
+  FirewallRT1bId:
+    Description: Firewall Route Table 1b ID
+    Value: !Ref FirewallRT1b
+    Export:
+      Name: !Sub ${AWS::StackName}-FirewallRT1bId
+
+  ManagementRT1aId:
+    Description: Management Route Table 1a ID
+    Value: !Ref ManagementRT1a
+    Export:
+      Name: !Sub ${AWS::StackName}-ManagementRT1aId
+
+  ManagementRT1bId:
+    Description: Management Route Table 1b ID
+    Value: !Ref ManagementRT1b
+    Export:
+      Name: !Sub ${AWS::StackName}-ManagementRT1bId
+
+  TgwEniRT1aId:
+    Description: TGW ENI Route Table 1a ID
+    Value: !Ref TgwEniRT1a
+    Export:
+      Name: !Sub ${AWS::StackName}-TgwEniRT1aId
+
+  TgwEniRT1bId:
+    Description: TGW ENI Route Table 1b ID
+    Value: !Ref TgwEniRT1b
+    Export:
+      Name: !Sub ${AWS::StackName}-TgwEniRT1bId

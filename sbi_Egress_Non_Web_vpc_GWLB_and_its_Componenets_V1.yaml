@@ -1,0 +1,217 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SBI Gateway Load Balancer Infrastructure'
+
+Parameters:
+  EgressNonWebVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for GWLB creation
+
+  SubnetGwlbEndAz1:
+    Type: AWS::EC2::Subnet::Id
+    Description: GWLB Endpoint Subnet ID in AZ1
+
+  SubnetGwlbEndAz2:
+    Type: AWS::EC2::Subnet::Id
+    Description: GWLB Endpoint Subnet ID in AZ2
+
+  Environment:
+    Type: String
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name for resource tagging
+
+  Owner:
+    Type: String
+    Default: "SBI-Network-Team"
+    Description: Owner tag value
+
+  Vendor:
+    Type: String
+    Default: ACC
+    Description: Vendor tag value
+
+Resources:
+  # Gateway Load Balancer
+  GatewayLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: SBI-non-web-egress-GWLB
+      Type: gateway
+      Subnets:
+        - !Ref SubnetGwlbEndAz1
+        - !Ref SubnetGwlbEndAz2
+      LoadBalancerAttributes:
+        - Key: load_balancing.cross_zone.enabled
+          Value: "true"
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-GWLB
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Vendor
+          Value: !Ref Vendor
+        - Key: Project
+          Value: SBI
+        - Key: Application
+          Value: Egress-Non-Web
+        - Key: cloudformation:stack-id
+          Value: !Ref AWS::StackId
+
+  # GWLB Target Group
+  GWLBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: SBI-non-web-egress-GWLB-TG
+      Protocol: GENEVE
+      Port: 6081
+      VpcId: !Ref EgressNonWebVPC
+      TargetType: ip
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: 80
+      HealthCheckPath: /
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-GWLB-TG
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Vendor
+          Value: !Ref Vendor
+        - Key: Project
+          Value: SBI
+        - Key: Application
+          Value: Egress-Non-Web
+        - Key: cloudformation:stack-id
+          Value: !Ref AWS::StackId
+
+  # GWLB Listener
+  GWLBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref GatewayLoadBalancer
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref GWLBTargetGroup
+      Port: 6081
+      Protocol: GENEVE
+
+  # GWLB Endpoint Service
+  GWLBEndpointService:
+    Type: AWS::EC2::VPCEndpointService
+    Properties:
+      GatewayLoadBalancerArns: 
+        - !Ref GatewayLoadBalancer
+      AcceptanceRequired: false
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-GWLB-VPC-ES
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Vendor
+          Value: !Ref Vendor
+        - Key: Project
+          Value: SBI
+        - Key: Application
+          Value: Egress-Non-Web
+        - Key: cloudformation:stack-id
+          Value: !Ref AWS::StackId
+
+  # GWLB Endpoint in AZ1
+  GWLBEndpointAZ1:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      ServiceName: !Sub 'com.amazonaws.vpce.${AWS::Region}.${GWLBEndpointService}'
+      VpcEndpointType: GatewayLoadBalancer
+      SubnetIds:
+        - !Ref SubnetGwlbEndAz1
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-GWLB-VPC-E-1a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Vendor
+          Value: !Ref Vendor
+        - Key: Project
+          Value: SBI
+        - Key: Application
+          Value: Egress-Non-Web
+        - Key: cloudformation:stack-id
+          Value: !Ref AWS::StackId
+
+  # GWLB Endpoint in AZ2
+  GWLBEndpointAZ2:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      ServiceName: !Sub 'com.amazonaws.vpce.${AWS::Region}.${GWLBEndpointService}'
+      VpcEndpointType: GatewayLoadBalancer
+      SubnetIds:
+        - !Ref SubnetGwlbEndAz2
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-GWLB-VPC-E-1b
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Vendor
+          Value: !Ref Vendor
+        - Key: Project
+          Value: SBI
+        - Key: Application
+          Value: Egress-Non-Web
+        - Key: cloudformation:stack-id
+          Value: !Ref AWS::StackId
+
+Outputs:
+  GatewayLoadBalancerArn:
+    Description: Gateway Load Balancer ARN
+    Value: !Ref GatewayLoadBalancer
+    Export:
+      Name: !Sub ${AWS::StackName}-GWLBArn
+
+  GWLBTargetGroupArn:
+    Description: Gateway Load Balancer Target Group ARN
+    Value: !Ref GWLBTargetGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-GWLBTargetGroupArn
+
+  GWLBEndpointServiceId:
+    Description: Gateway Load Balancer Endpoint Service ID
+    Value: !Ref GWLBEndpointService
+    Export:
+      Name: !Sub ${AWS::StackName}-GWLBEndpointServiceId
+
+  GWLBEndpointAZ1Id:
+    Description: Gateway Load Balancer Endpoint ID in AZ1
+    Value: !Ref GWLBEndpointAZ1
+    Export:
+      Name: !Sub ${AWS::StackName}-GWLBEndpointAZ1Id
+
+  GWLBEndpointAZ2Id:
+    Description: Gateway Load Balancer Endpoint ID in AZ2
+    Value: !Ref GWLBEndpointAZ2
+    Export:
+      Name: !Sub ${AWS::StackName}-GWLBEndpointAZ2Id
+      
+ # This template will create:
+  # - Gateway Load Balancer with cross zone loand balancing enabled.
+  # - GWLB Target Group
+  # - GWLB Endpoint Service
+  # - GWLB Endpoint in AZ1
+  # - GWLB Endpoint in AZ2
+  # - Also done with proper tagging

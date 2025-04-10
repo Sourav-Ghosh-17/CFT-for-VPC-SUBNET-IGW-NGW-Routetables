@@ -1,0 +1,213 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SBI Network Infrastructure - Egress Non Web VPC Subnet Configuration'
+
+Parameters:
+  EgressNonWebVPC:    
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for subnet creation
+
+  ResourceName:
+    Type: String
+    Description: Resource name prefix for all resources
+    Default: sbi-project
+    
+  Environment:
+    Type: String
+    Description: Environment name for resource tagging
+    Default: production
+    AllowedValues:
+      - development
+      - staging
+      - production
+    
+  Owner:
+    Type: String
+    Description: Owner tag value for resource tracking
+    Default: SBI
+    
+  EgressNonWebVpcCidr:
+    Type: String
+    Description: CIDR block for the VPC
+    Default: "10.53.70.0/24"
+
+Resources:
+  GwlbEndpointSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.0/28"
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-gwlb-e-1a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  GwlbEndpointSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.16/28"
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-gwlb-e-1b
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  NatGatewaySubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.32/28"
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-nat-gw-1a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  NatGatewaySubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.48/28"
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-nat-gw-1b
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  FirewallSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.64/27"
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-FW-1a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  FirewallSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.96/27"
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-FW-1b
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  ManagementSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.128/28"
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-mgmt-1a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  ManagementSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.144/28"
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-mgmt-1b
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  TgwEniSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.160/28"
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-tgw-eni-1a
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+  TgwEniSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EgressNonWebVPC
+      CidrBlock: "10.53.70.176/28"
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-tgw-eni-1b
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+
+Outputs:
+  GwlbEndpointSubnet1a:
+    Description: Non-Web-Egress GWLB Endpoint Subnet 1a
+    Value: !Ref GwlbEndpointSubnet1a
+
+  GwlbEndpointSubnet1b:
+    Description: Non-Web-Egress GWLB Endpoint Subnet 1b
+    Value: !Ref GwlbEndpointSubnet1b
+
+  NatGatewaySubnet1a:
+    Description: Non-Web-Egress NAT Gateway Subnet 1a
+    Value: !Ref NatGatewaySubnet1a
+
+  NatGatewaySubnet1b:
+    Description: Non-Web-Egress NAT Gateway Subnet 1b
+    Value: !Ref NatGatewaySubnet1b
+
+  FirewallSubnet1a:
+    Description: Non-Web-Egress Firewall Subnet 1a
+    Value: !Ref FirewallSubnet1a
+
+  FirewallSubnet1b:
+    Description: Non-Web-Egress Firewall Subnet 1b
+    Value: !Ref FirewallSubnet1b
+
+  ManagementSubnet1a:
+    Description: Non-Web-Egress Management Subnet 1a
+    Value: !Ref ManagementSubnet1a
+
+  ManagementSubnet1b:
+    Description: Non-Web-Egress Management Subnet 1b
+    Value: !Ref ManagementSubnet1b
+
+  TgwEniSubnet1a:
+    Description: Non-Web-Egress TGW ENI Subnet 1a
+    Value: !Ref TgwEniSubnet1a
+
+  TgwEniSubnet1b:
+    Description: Non-Web-Egress TGW ENI Subnet 1b
+    Value: !Ref TgwEniSubnet1b

@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SBI Transit Gateway Attachment Stack'
+
+Parameters:
+  EgressNonWebVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for Transit Gateway attachment
+
+  TransitGatewayId:
+    Type: String
+    Description: Existing Transit Gateway ID
+
+  SubnetTgwAz1:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID for TGW attachment in AZ1 (SBI-non-web-egress-tgw-eni-1a)
+
+  SubnetTgwAz2:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID for TGW attachment in AZ2 (SBI-non-web-egress-tgw-eni-1b)
+
+  Environment:
+    Type: String
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Environment name for resource tagging
+
+  Owner:
+    Type: String
+    Default: "SBI-Network-Team"
+    Description: Owner tag value
+
+  Vendor:
+    Type: String
+    Default: ACC
+    Description: Vendor tag value
+
+Resources:
+  TransitGatewayAttachment:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+      TransitGatewayId: !Ref TransitGatewayId
+      VpcId: !Ref EgressNonWebVPC
+      SubnetIds: 
+        - !Ref SubnetTgwAz1
+        - !Ref SubnetTgwAz2
+      Tags:
+        - Key: Name
+          Value: SBI-non-web-egress-tgw-attachment
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Vendor
+          Value: !Ref Vendor
+        - Key: Project
+          Value: SBI
+        - Key: Application
+          Value: Egress-Non-Web
+        - Key: cloudformation:stack-id
+          Value: !Ref AWS::StackId
+
+Outputs:
+  TransitGatewayAttachmentId:
+    Description: Transit Gateway Attachment ID
+    Value: !Ref TransitGatewayAttachment
+    Export:
+      Name: !Sub ${AWS::StackName}-TGWAttachmentId
+      
+# This template will:
+
+# Create a Transit Gateway attachment using the specified subnets [2]
+
+# Tag the attachment appropriately
+
